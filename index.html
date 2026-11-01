@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f6f8f4" />
+    <meta name="description" content="基于 WebGL 的过山车轨道编辑与乘坐演示。" />
+    <title>轨道工坊 · WebGL 轨道编辑器</title>
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand" aria-label="轨道工坊">
+          <div class="brand-mark"><span></span><span></span><span></span></div>
+          <strong>轨道工坊</strong>
+        </div>
+        <div class="mode-switch" role="group" aria-label="工作模式">
+          <button id="build-mode" class="mode-button active" type="button" aria-pressed="true">建造模式</button>
+          <button id="ride-mode" class="mode-button" type="button" aria-pressed="false">乘坐模式</button>
+        </div>
+        <div class="top-actions">
+          <button id="launch-button" class="button button-primary" type="button"><span>发车</span></button>
+          <button id="pause-button" class="button button-soft" type="button">暂停</button>
+          <button id="reset-button" class="button button-ghost" type="button" title="将小车放回起点">重置</button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <aside class="sidebar" aria-label="轨道设置">
+          <section class="panel-section">
+            <div class="section-title"><h2>预设轨道</h2></div>
+            <div id="presets" class="preset-list"></div>
+          </section>
+
+          <section class="panel-section point-section">
+            <div class="section-title"><h2>控制点</h2><span id="point-count" class="tiny-pill">0 个</span></div>
+            <div id="point-list" class="point-list" aria-label="控制点列表"></div>
+            <div class="point-actions"><button id="add-point" class="button button-outline" type="button">添加节点</button><button id="delete-point" class="button button-outline danger" type="button">删除选中</button></div>
+            <div id="coordinate-editor" class="coordinate-editor">
+              <div class="coordinate-heading"><span>坐标</span><strong id="selected-point-label">—</strong></div>
+              <div class="coordinate-grid">
+                <label><span>X</span><input id="point-x" type="number" step="0.1" min="-60" max="60" inputmode="decimal" /></label>
+                <label><span>Y</span><input id="point-y" type="number" step="0.1" min="2" max="24" inputmode="decimal" /></label>
+                <label><span>Z</span><input id="point-z" type="number" step="0.1" min="-60" max="60" inputmode="decimal" /></label>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-title"><h2>运行设置</h2></div>
+            <div class="slider-title"><label for="speed-range">目标速度</label><strong id="speed-value">14 m/s</strong></div>
+            <input id="speed-range" class="range" type="range" min="4" max="32" value="14" />
+            <label class="switch-row" title="下坡加速，上坡减速"><span><strong>模拟重力</strong></span><input id="gravity-toggle" type="checkbox" /><i></i></label>
+            <label class="switch-row" title="按轨道高度改变颜色"><span><strong>高度着色</strong></span><input id="height-toggle" type="checkbox" /><i></i></label>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-title"><h2>场景显示</h2></div>
+            <div class="toggle-grid">
+              <label><input id="sleepers-toggle" type="checkbox" checked /><span>轨枕</span></label>
+              <label><input id="supports-toggle" type="checkbox" checked /><span>支架</span></label>
+              <label><input id="scenery-toggle" type="checkbox" checked /><span>景观</span></label>
+              <label><input id="grid-toggle" type="checkbox" /><span>网格</span></label>
+            </div>
+          </section>
+
+          <section class="panel-section save-section">
+            <div class="save-actions"><button id="export-button" class="button button-dark" type="button">导出 JSON</button><button id="import-button" class="button button-outline" type="button">导入 JSON</button></div>
+            <input id="import-file" type="file" accept=".json,application/json" hidden />
+          </section>
+        </aside>
+
+        <main class="stage" aria-label="三维过山车场景。建造模式下点击控制点并拖动手柄；拖动空白处旋转视角。">
+          <div id="scene-host" class="scene-host"></div>
+          <div id="webgl-error" class="webgl-error" hidden></div>
+          <div class="scene-tools">
+            <div class="track-info"><div><strong id="track-name">平缓环线</strong><span id="status-text" role="status" aria-live="polite" hidden></span></div></div>
+            <div id="profile-panel" class="profile-panel" hidden>
+              <strong>高度剖面</strong>
+              <svg viewBox="0 0 240 76" preserveAspectRatio="none" role="img" aria-label="轨道高度剖面图">
+                <path class="profile-guides" d="M8 37 H232 M8 64 H232" />
+                <path id="profile-fill" class="profile-fill" />
+                <path id="profile-line" class="profile-line" />
+                <line id="profile-cursor" class="profile-cursor" y1="8" y2="64" />
+                <circle id="profile-dot" class="profile-dot" r="4" />
+              </svg>
+            </div>
+            <div class="view-panel" role="group" aria-label="视角切换"><button class="view-button active" data-view="free" type="button" aria-pressed="true">自由观察</button><button class="view-button" data-view="follow" type="button" aria-pressed="false">跟随小车</button><button class="view-button" data-view="first" type="button" aria-pressed="false">第一人称</button></div>
+          </div>
+        </main>
+      </div>
+
+      <footer class="metrics" aria-label="运行信息">
+        <div class="metric"><div><small>轨道长度</small><strong id="length-value">—</strong></div></div>
+        <div class="metric"><div><small>高度差</small><strong id="height-value">—</strong></div></div>
+        <div class="metric"><div><small>当前速度</small><strong id="current-speed-value">0 m/s</strong></div></div>
+        <div class="metric progress-metric"><div class="progress-head"><small>运行进度</small><strong id="progress-value">0%</strong></div><div class="progress-bar"><div id="progress-fill"></div></div></div>
+        <div class="metric fps-metric"><div><small>画面帧率</small><strong id="fps-value">— FPS</strong></div></div>
+      </footer>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

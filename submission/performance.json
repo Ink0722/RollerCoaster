@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-01",
+  "browser": "Chrome/145.0.7632.110",
+  "viewport": "1440 × 900 CSS px",
+  "deviceScaleFactor": 1,
+  "method": "Chrome headless; FPS read from the app after 1.8 s warm-up, six readings 1.05 s apart",
+  "launchFlags": [
+    "--headless=new",
+    "--enable-unsafe-swiftshader",
+    "--disable-background-timer-throttling",
+    "--disable-renderer-backgrounding"
+  ],
+  "renderer": {
+    "vendor": "Google Inc. (Intel)",
+    "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "results": [
+    {
+      "name": "建造模式，静止轨道",
+      "samples": [
+        60,
+        60,
+        60,
+        60,
+        60,
+        60
+      ],
+      "median": 60,
+      "min": 60,
+      "max": 60
+    },
+    {
+      "name": "乘坐模式，跟随视角",
+      "samples": [
+        60,
+        60,
+        60,
+        60,
+        60,
+        60
+      ],
+      "median": 60,
+      "min": 60,
+      "max": 60
+    },
+    {
+      "name": "乘坐模式，第一人称",
+      "samples": [
+        60,
+        60,
+        60,
+        60,
+        60,
+        60
+      ],
+      "median": 60,
+      "min": 60,
+      "max": 60
+    }
+  ]
+}
